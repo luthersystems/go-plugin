@@ -119,19 +119,11 @@ func (c *RPCClient) Close() error {
 	var empty struct{}
 	returnErr := c.control.Call("Control.Quit", true, &empty)
 
-	// Close the other streams we have
-	if err := c.control.Close(); err != nil {
-		return err
-	}
-	if err := c.stdout.Close(); err != nil {
-		return err
-	}
-	if err := c.stderr.Close(); err != nil {
-		return err
-	}
-	if err := c.broker.Close(); err != nil {
-		return err
-	}
+	// Close the other streams we have, but don't error check anything
+	c.control.Close()
+	c.stdout.Close()
+	c.stderr.Close()
+	c.broker.Close()
 
 	// Return back the error we got from Control.Quit. This is very important
 	// since we MUST return non-nil error if this fails so that Client.Kill
