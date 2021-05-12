@@ -430,17 +430,18 @@ func (c *Client) Kill() {
 		// Close the client to cleanly exit the process.
 		client, err := c.Client()
 		if err == nil {
-			err = client.Close()
+			client.Close()
 
-			// If there is no error, then we attempt to wait for a graceful
-			// exit. If there was an error, we assume that graceful cleanup
-			// won't happen and just force kill.
-			graceful = err == nil
-			if err != nil {
-				// If there was an error just log it. We're going to force
-				// kill in a moment anyways.
-				c.logger.Warn("error closing client during Kill", "err", err)
-			}
+			// ignore errors, and always assume a graceful
+			// exit. the old code that used to be here was
+			// wrong because the client might exit before
+			// it finished responding to Quit. since that
+			// is a possibility, all we can do is expect a
+			// graceful exit in all cases. if the plugin
+			// didn't exit gracefully, it will be killed
+			// anyways, after 2 seconds.
+
+			graceful = true
 		} else {
 			c.logger.Error("client", "error", err)
 		}
